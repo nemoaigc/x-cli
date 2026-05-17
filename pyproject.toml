@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "x-cli"
+version = "1.1.0"
+description = "LLM-native X/Twitter toolkit skill — read + write (post/reply/follow/like/retweet/bookmark). Derivative of twitter-cli (Apache-2.0) by @jackwener — see NOTICE.md."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "nemoaigc" }]
+keywords = ["twitter", "x", "toolkit", "scraping", "articles", "post", "claude-skill"]
+dependencies = [
+    "curl_cffi>=0.7",
+    "xclienttransaction>=1.0.1",
+    "browser-cookie3>=0.19",
+    "PyYAML>=6.0",
+    "beautifulsoup4>=4.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/nemoaigc/x-cli"
+Repository = "https://github.com/nemoaigc/x-cli"
+"Upstream (twitter-cli)" = "https://github.com/public-clis/twitter-cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts/_core"]
