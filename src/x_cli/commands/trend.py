@@ -45,8 +45,9 @@ def _score_trend(t: Trend) -> int:
 def scan_cmd(
     ctx: typer.Context,
     drill_top: int | None = typer.Option(
-        None, "--drill-top", metavar="N",
-        help="After scanning, auto-drill top N trends.",
+        None, "--drill-top", "--scan-drill-top", metavar="N",
+        help="After scanning, auto-drill top N trends. `--scan-drill-top` is "
+             "the legacy alias preserved from scripts/digest.py.",
     ),
     top: int = typer.Option(
         20, "--top", metavar="N",

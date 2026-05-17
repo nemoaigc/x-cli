@@ -165,3 +165,45 @@ def test_user_tweets_returns_tweet_list_in_envelope(cli):
     data = body["data"]
     # The shape downstream consumers depend on: list of tweet dicts.
     assert isinstance(data, list) or (isinstance(data, dict) and "tweets" in data)
+
+
+# ─────────────── codex review followups ──────────────────────────────
+
+
+def test_user_tweets_emits_content_kind_per_item(cli):
+    """`user HANDLE --tweets` must carry the legacy `content_kind` field on
+    each tweet (legacy _emit_tweets always added it)."""
+    from x_cli.core.models import Tweet, Author, Metrics
+    tw = Tweet(id="t1", author=Author(id="u1", name="K", screen_name="k"),
+               text="hi", created_at="", metrics=Metrics())
+    client = MagicMock()
+    client.resolve_user_id.return_value = "u1"
+    client.fetch_user_tweets.return_value = [tw]
+    with patch("x_cli.commands.user.build_client", return_value=client):
+        result = cli(["user", "karpathy", "--tweets"])
+    assert result.exit_code == 0
+    data = result.json()["data"]
+    assert data[0]["content_kind"] == "tweet"
+
+
+def test_user_tweets_supports_expand_articles_flag(cli):
+    """`user HANDLE --tweets --expand-articles` must be accepted (legacy flag)."""
+    client = MagicMock()
+    client.resolve_user_id.return_value = "u1"
+    client.fetch_user_tweets.return_value = []
+    with patch("x_cli.commands.user.build_client", return_value=client):
+        result = cli(["user", "karpathy", "--tweets", "--expand-articles"])
+    assert result.exit_code == 0
+
+
+def test_user_profile_metadata_unaffected_by_timeline_fields(cli, fake_user):
+    """Default mode (no --tweets etc.) returns the bare UserProfile dict.
+    Don't accidentally attach content_kind / etc. here."""
+    client = MagicMock()
+    client.fetch_user.return_value = fake_user
+    with patch("x_cli.commands.user.build_client", return_value=client):
+        result = cli(["user", "@karpathy"])
+    assert result.exit_code == 0
+    profile = result.json()["data"]
+    assert "content_kind" not in profile
+    assert profile["screen_name"] == "testuser"

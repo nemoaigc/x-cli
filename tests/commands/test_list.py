@@ -23,15 +23,38 @@ def test_list_top(cli):
     client.fetch_list_timeline.assert_called_once_with("12345", count=50)
 
 
-def test_list_mix_gates_trigger_paging(cli):
-    """When --min-articles or --min-posts is set, the mix-gate paging loop
-    runs (calls fetch with cursor + return_cursor=True)."""
-    client = MagicMock()
-    client.fetch_list_timeline.return_value = ([], None)  # mix-gate signature
-    with patch("x_cli.commands.list_timeline.build_client", return_value=client):
-        result = cli(["list", "12345", "--top", "10", "--min-articles", "2"])
+# ─────────────── codex review followups ──────────────────────────────
 
+
+def test_list_does_not_advertise_mix_gates(cli):
+    """Legacy `scripts/read.py --list ID` was single-page only. Mix-gate
+    flags were never wired up. Asserting they're absent so the typer
+    surface mirrors legacy: --min-articles passing should error, not
+    silently TypeError-crash inside the real client."""
+    result = cli(["list", "12345", "--min-articles", "2"])
+    assert result.exit_code == 2  # no such option
+
+
+def test_list_supports_expand_articles_flag(cli):
+    """Legacy --expand-articles was a tweet-postprocessing flag, valid on
+    all timeline-producing commands. list should expose it."""
+    client = MagicMock()
+    client.fetch_list_timeline.return_value = []
+    with patch("x_cli.commands.list_timeline.build_client", return_value=client):
+        result = cli(["list", "12345", "--expand-articles"])
     assert result.exit_code == 0
-    # First call must use cursor+return_cursor (mix mode)
-    args, kwargs = client.fetch_list_timeline.call_args
-    assert kwargs.get("return_cursor") is True or (len(args) >= 3 and args[2] is True)
+
+
+def test_list_emits_content_kind_per_tweet(cli):
+    """Every tweet in the envelope must carry the legacy `content_kind`
+    field (was added by _tweet_to_dict)."""
+    from x_cli.core.models import Tweet, Author, Metrics
+    tw = Tweet(id="t1", author=Author(id="u1", name="K", screen_name="k"),
+               text="hi", created_at="", metrics=Metrics())
+    client = MagicMock()
+    client.fetch_list_timeline.return_value = [tw]
+    with patch("x_cli.commands.list_timeline.build_client", return_value=client):
+        result = cli(["list", "12345"])
+    assert result.exit_code == 0
+    data = result.json()["data"]
+    assert data[0]["content_kind"] == "tweet"

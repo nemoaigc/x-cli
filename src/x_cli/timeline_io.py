@@ -218,7 +218,13 @@ def emit_timeline(
 
     if opts.expand_articles:
         tweets = _expand_articles(tweets, client)
-    if profile_name and tweets:
+    # Annotate `you_follow_author` whenever we have tweets and a client —
+    # `profile_name=None` (default-profile / env-cookies path) is valid;
+    # following_cache uses a sentinel cache key for it. Legacy
+    # `scripts/read.py` always passed the resolved profile (possibly None)
+    # straight through; gating on `profile_name` truthiness silently
+    # dropped the annotation for that majority case.
+    if tweets:
         _annotate(tweets, client, profile_name)
 
     emit_ok([_tweet_to_dict(t) for t in tweets], use_yaml)

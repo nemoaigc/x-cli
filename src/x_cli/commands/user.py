@@ -12,6 +12,14 @@ Modes (mutually exclusive):
   --following    Following list
   --recommended  "Who to follow" recommendations (HANDLE optional;
                  omitting gives recommendations for the logged-in user)
+
+Tweet-list modes route through `emit_timeline` so they pick up:
+  - `content_kind` per tweet
+  - `you_follow_author` follow annotation when auth is available
+  - `--expand-articles` post-processing
+
+User-list modes (--followers / --following / --recommended) emit a list of
+UserProfile dicts directly — no tweet-specific enrichment applies.
 """
 from __future__ import annotations
 
@@ -23,28 +31,31 @@ import typer
 from x_cli.cli_ctx import CliCtx
 from x_cli.core.exceptions import InvalidInputError, XQueryError
 from x_cli.core.output import build_client, emit_error, emit_ok
+from x_cli.timeline_io import TimelineOpts, emit_timeline
 
 
-# Timeline / list modes — these all need a resolved user_id.
-_TIMELINE_MODES: dict[str, str] = {
+# Tweet-list modes — route through emit_timeline.
+_TWEET_MODES: dict[str, str] = {
     "tweets":     "fetch_user_tweets",
     "replies":    "fetch_user_replies",
     "media":      "fetch_user_media",
     "likes":      "fetch_user_likes",
     "articles":   "fetch_user_articles",
     "highlights": "fetch_user_highlights",
+}
+
+# User-list modes — emit UserProfile list directly.
+_USER_LIST_MODES: dict[str, str] = {
     "followers":  "fetch_followers",
     "following":  "fetch_following",
 }
 
 
-def _serialize(obj: Any) -> Any:
-    """Dataclass → dict (recursively); pass-through scalars."""
-    if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
-        return dataclasses.asdict(obj)
-    if isinstance(obj, list):
-        return [_serialize(x) for x in obj]
-    return obj
+def _serialize_users(items: list[Any]) -> list[dict]:
+    return [
+        dataclasses.asdict(x) if dataclasses.is_dataclass(x) and not isinstance(x, type) else x
+        for x in items
+    ]
 
 
 def _ctx(ctx: typer.Context) -> CliCtx:
@@ -73,6 +84,10 @@ def register(app: typer.Typer) -> None:
         following:   bool = typer.Option(False, "--following",   help="Following list"),
         recommended: bool = typer.Option(False, "--recommended", help='"Who to follow" recs'),
         top:         int  = typer.Option(30, "--top", metavar="N", help="Max results"),
+        expand_articles: bool = typer.Option(
+            False, "--expand-articles",
+            help="For tweet-list modes: replace article tweets with their full body.",
+        ),
     ) -> None:
         c = _ctx(ctx)
 
@@ -107,27 +122,48 @@ def register(app: typer.Typer) -> None:
             # ── general recommendations (no handle) ──
             if recommended and not norm:
                 users = client.fetch_recommended_users(user_id=None, count=top)
-                emit_ok(_serialize(users), c.use_yaml)
+                emit_ok(_serialize_users(users), c.use_yaml)
                 return
 
-            # ── per-handle modes ──
+            # ── per-handle recommended ──
             if recommended:
                 user_id = client.resolve_user_id(norm)
                 users = client.fetch_recommended_users(user_id=user_id, count=top)
-                emit_ok(_serialize(users), c.use_yaml)
+                emit_ok(_serialize_users(users), c.use_yaml)
                 return
 
-            if selected:
+            # ── user-list modes (followers / following) ──
+            if selected and selected[0] in _USER_LIST_MODES:
                 mode = selected[0]
                 user_id = client.resolve_user_id(norm)
-                method = getattr(client, _TIMELINE_MODES[mode])
-                results = method(user_id, top)
-                emit_ok(_serialize(results), c.use_yaml)
+                users = getattr(client, _USER_LIST_MODES[mode])(user_id, top)
+                emit_ok(_serialize_users(users), c.use_yaml)
+                return
+
+            # ── tweet-list modes — go through emit_timeline ──
+            if selected and selected[0] in _TWEET_MODES:
+                mode = selected[0]
+                user_id = client.resolve_user_id(norm)
+                method = getattr(client, _TWEET_MODES[mode])
+
+                def fetch_page(*, count):
+                    return method(user_id, count)
+
+                emit_timeline(
+                    client,
+                    fetch_page,
+                    TimelineOpts(top=top, expand_articles=expand_articles),
+                    use_yaml=c.use_yaml,
+                    profile_name=c.profile,
+                )
                 return
 
             # ── default: profile metadata ──
             profile = client.fetch_user(norm)
-            emit_ok(_serialize(profile), c.use_yaml)
+            emit_ok(
+                dataclasses.asdict(profile) if dataclasses.is_dataclass(profile) else profile,
+                c.use_yaml,
+            )
         except XQueryError as exc:
             emit_error(exc.error_code, str(exc), c.use_yaml)
             raise typer.Exit(code=1)

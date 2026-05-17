@@ -82,3 +82,23 @@ def test_trend_scan_drill_top(cli):
     assert "drilled" in data
     assert len(data["drilled"]) == 1
     assert data["drilled"][0]["trend_id"] == "100"
+
+
+# ─────────────── codex review followups ──────────────────────────────
+
+
+def test_trend_scan_legacy_scan_drill_top_alias(cli):
+    """`--scan-drill-top` is the legacy SPEC name; preserve as alias for
+    `--drill-top` to avoid breaking migrated scripts."""
+    client = MagicMock()
+    trends = [_make_trend("100", "AI", 1000)]
+    client.fetch_search.return_value = []
+    with patch("x_cli.commands.trend.build_client", return_value=client), \
+         patch("x_cli.commands.trend.fetch_all_tabs", return_value=trends), \
+         patch("x_cli.commands.trend.fetch_trend_kols", return_value=[]):
+        result = cli(["trend", "scan", "--scan-drill-top", "1", "--top", "10"])
+
+    assert result.exit_code == 0, result.stderr
+    data = result.json()["data"]
+    assert "drilled" in data
+    assert len(data["drilled"]) == 1
