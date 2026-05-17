@@ -106,7 +106,8 @@ x-cli me mentions [--max N]
 
 ## engage — was `scripts/me.py` (WRITE subcommands)
 
-All accept `--dry-run` (default) / `--yes` (execute).
+Engagement writes execute immediately (preserved from legacy me.py —
+they're considered low-risk reactions, no --dry-run/--yes gate).
 
 ```
 x-cli engage like TWEET_ID
@@ -133,7 +134,8 @@ x-cli post unhide-reply REPLY_ID
 ## follow — was `scripts/write.py` (follow / block / mute / unfollow / etc.) + `scripts/follow_queue.py`
 
 ```
-x-cli follow HANDLE                     Follow user
+x-cli follow add HANDLE                 Follow user (was bare `follow HANDLE`;
+                                        renamed for typer subgroup compatibility)
 x-cli follow remove HANDLE              Unfollow
 x-cli follow block HANDLE
 x-cli follow unblock HANDLE
