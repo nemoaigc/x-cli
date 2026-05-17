@@ -11,7 +11,9 @@ import typer
 from x_cli.cli_ctx import CliCtx
 from x_cli.core.output import setup_logging
 from x_cli.commands.auth import auth_app
+from x_cli.commands.trend import trend_app
 from x_cli.commands import feed as feed_cmd
+from x_cli.commands import list_timeline as list_cmd
 from x_cli.commands import search as search_cmds
 from x_cli.commands import tweet as tweet_cmds
 from x_cli.commands import user as user_cmd
@@ -24,10 +26,12 @@ app = typer.Typer(
 )
 
 app.add_typer(auth_app, name="auth", help="Manage authentication profiles.")
+app.add_typer(trend_app, name="trend", help="Scan Explore trends and drill into them.")
 user_cmd.register(app)
 search_cmds.register(app)
 tweet_cmds.register(app)
 feed_cmd.register(app)
+list_cmd.register(app)
 
 
 @app.callback()
