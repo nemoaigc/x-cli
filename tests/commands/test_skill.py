@@ -18,6 +18,21 @@ def test_skill_path_points_to_bundled_x_research(cli):
     assert (skill_path / "commands" / "x.md").exists()
 
 
+def test_skill_metadata_does_not_assume_default_research_topic(cli):
+    result = cli(["skill", "path"])
+    assert result.exit_code == 0, result.stderr
+
+    skill_path = Path(result.json()["data"]["path"])
+    metadata = (skill_path / "agents" / "openai.yaml").read_text()
+    x_research_command = (skill_path / "commands" / "x-research.md").read_text()
+    skill_body = (skill_path / "SKILL.md").read_text()
+
+    assert "today's AI agent news" not in metadata
+    assert "ask for the topic/domain/account/time window" in x_research_command
+    assert "Never invent a default topic" in skill_body
+    assert "Write a short research plan before executing" in skill_body
+
+
 def test_skill_install_links_claude_and_codex(tmp_path, cli):
     result = cli(["skill", "install", "--home", str(tmp_path)])
 

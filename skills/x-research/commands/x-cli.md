@@ -9,6 +9,7 @@ Use the `x-research` skill and the installed `x-cli` binary to handle this X/Twi
 
 Routing:
 - For broad research, load `references/search-plan.md`, derive the time window, probe sources, then synthesize a report.
+- Before broad research, show a compact research plan. If no argument was provided, ask for the research target instead of using a default topic.
 - For search, accounts, timelines, tweets, lists, likes, bookmarks, or mentions, use read mode.
 - For current topics or discovery, use trend mode.
 - For posts, replies, quotes, follows, deletes, or list changes, use write mode.

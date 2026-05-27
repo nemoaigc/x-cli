@@ -26,16 +26,28 @@ clear.
 
 For broad research requests, first state a compact execution plan, then run it:
 
+0. If no topic/account/domain/time window is provided, ask for the missing
+   research target. Never invent a default topic.
 1. Resolve the domain and time window from the prompt.
    - "today" = current local date.
    - "this week" = last 7 days unless the user gives exact dates.
    - "recent/latest" = last 2-7 days, adjusted by domain velocity.
 2. Load `references/search-plan.md`.
-3. Probe sources before committing to thresholds: follow-circle, keyword search,
+3. Write a short research plan before executing. Include:
+   - Objective and scope
+   - Time window, with exact dates when relative dates are used
+   - Source mix: follow-circle, keyword search, trend scan, long-form/articles
+   - Candidate queries/accounts/trends to probe
+   - Paper/project verification path when relevant
+   - Deliverable shape
+4. Probe sources before committing to thresholds: follow-circle, keyword search,
    trend scan, and long-form/articles when relevant.
-4. Synthesize topics semantically. Do not dump raw tweets.
-5. If the user asks for papers, extract arXiv/OpenReview/PDF/project links from X
+5. Synthesize topics semantically. Do not dump raw tweets.
+6. If the user asks for papers, extract arXiv/OpenReview/PDF/project links from X
    results and verify them with web/arXiv search when available.
+
+If the user asks for a plan, strategy, or "先写计划", stop after the plan and
+wait for approval. Otherwise proceed after showing the compact plan.
 
 Only ask a clarifying question when the domain is genuinely ambiguous enough that
 running would likely collect the wrong corpus.
@@ -48,9 +60,10 @@ running would likely collect the wrong corpus.
 
   - **Simple lookup** (single user timeline, single tweet/article, follower list):
     read `references/read-mode.md` — flag rubric for a single `x-cli` call.
-  - **Research or multi-source scan** (briefing, topic scan, "what's happening with X"):
+- **Research or multi-source scan** (briefing, topic scan, "what's happening with X"):
     read `references/search-plan.md` — source selection, probe-first parameter derivation,
     `--product`/time-window decision. Load `references/read-mode.md` only for edge-case flags.
+    Always write the compact research plan before the first `x-cli` data command.
   - **Ranking / filtering**: after fetching, read `references/spam-patterns.md`
     (domain-bucketed regex catalog) and `references/ranking-weights.md`
     (per-intent weight rubric) to compose `rank.filter_stack` + `rank.author_diversity`
