@@ -1,7 +1,9 @@
 # x-cli
 
-X/Twitter command-line toolkit — read, search, post, engage. Cookie-based
-auth, JSON output, scriptable from any shell or backend.
+X/Twitter command-line toolkit and bundled agent research skill. The CLI reads,
+searches, posts, and engages with JSON output; the bundled `x-research` skill
+teaches agents how to plan X research, choose source mixes, and synthesize
+briefings through `x-cli`.
 
 ```bash
 pip install -e .                                # or: uv pip install -e .
@@ -11,6 +13,7 @@ x-cli user @karpathy --tweets --top 20
 x-cli search "claude code" --since 2026-05-10 --product Latest
 x-cli post --text "hello world" --yes
 x-cli engage like 1234567890
+x-cli skill install
 ```
 
 Every command emits a JSON envelope on stdout:
@@ -28,6 +31,7 @@ Exit codes: `0` = success · `1` = runtime / API error · `2` = invalid input.
 git clone https://github.com/nemoaigc/x-cli && cd x-cli
 uv sync                          # or: pip install -e .
 x-cli --help
+x-cli skill install              # installs x-research skill + /x commands
 ```
 
 ## Auth
@@ -77,6 +81,7 @@ x-cli auth status              # authenticated: true
 | `post`          | `--text TEXT [--reply-to --quote --media --long] [--yes]` · `delete / pin / unpin / hide-reply / unhide-reply TWEET_ID [--yes]` |
 | `follow`        | `add / remove / block / unblock / mute / unmute HANDLE [--yes]` · `queue add / list / tick / clear` |
 | `x-list`        | `create NAME [--description --public] [--yes]` · `delete LIST_ID [--yes]` · `add / remove LIST_ID HANDLE [--yes]` |
+| `skill`         | `path` · `install [--claude/--no-claude] [--codex/--no-codex] [--copy] [--force]` |
 
 All write commands default to `--dry-run`; pass `--yes` to execute.
 Engagement writes (`engage *`) are immediate — they're low-risk reactions.
@@ -107,12 +112,38 @@ Backend integrations: install the package into the same image and shell out.
 Or import `x_cli.core.client.TwitterClient` directly if you want fewer process
 spawns (advanced; the `core` module is private API).
 
-## Companion Claude Skill
+## Bundled Agent Skill
 
-For Claude Code users, the [`x-cli-skill`](https://github.com/nemoaigc/x-cli-skill)
-package wraps this CLI with prompt-driven mode selection (read / trend / write)
-and reference guides for ranking, spam filtering, and search planning. It
-shells out to `x-cli` — no logic duplication.
+`x-cli` ships an `x-research` skill for Claude/Codex-style agents. It is the
+workflow layer: it decides when to use follow-circle search, keyword probes,
+trend scans, long-form/article reads, ranking filters, and paper-link
+verification. The CLI remains the execution layer.
+
+Install it after installing the CLI:
+
+```bash
+x-cli skill install
+```
+
+That creates symlinks for:
+
+```text
+~/.claude/skills/x-research
+~/.codex/skills/x-research
+~/.claude/commands/x.md
+~/.claude/commands/x-research.md
+~/.claude/commands/x-cli.md
+```
+
+Restart the agent client, then use natural language or slash commands:
+
+```text
+去 X 调研下今天的 agent 新闻，有啥论文也拿过来
+/x 去 X 调研下今天的 agent 新闻，有啥论文也拿过来
+/x-research post-training 新论文 this month
+```
+
+`/x` is the human-facing entry point. `/x-cli` is kept as a compatibility alias.
 
 ## Tests
 

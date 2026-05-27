@@ -156,6 +156,20 @@ x-cli x-list add LIST_ID HANDLE
 x-cli x-list remove LIST_ID HANDLE
 ```
 
+## Agent skill installer
+
+```text
+x-cli skill path
+x-cli skill install [--home PATH] [--claude/--no-claude]
+                    [--codex/--no-codex] [--copy] [--force]
+                    [--check-auth]
+```
+
+`x-cli skill install` installs the bundled `x-research` agent skill and the
+Claude slash command wrappers `/x`, `/x-research`, and `/x-cli`. It uses symlinks
+by default so the skill stays version-synced with the CLI checkout or tool
+installation.
+
 ---
 
 ## Naming changes from old → new (registered for changelog)

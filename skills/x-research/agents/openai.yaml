@@ -1,0 +1,5 @@
+interface:
+  display_name: "X Research"
+  short_description: "Research and act on X/Twitter"
+  brand_color: "#111111"
+  default_prompt: "Use $x-research to research today's AI agent news on X and summarize the strongest signals."

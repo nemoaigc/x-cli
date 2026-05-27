@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "x-cli"
-version = "2.0.0"
+version = "2.1.0"
 description = "X/Twitter command-line toolkit — read, search, post, engage. Cookie-based auth, JSON output, scriptable and LLM-friendly."
 readme = "README.md"
 license = "Apache-2.0"
@@ -36,6 +36,21 @@ Repository = "https://github.com/nemoaigc/x-cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/x_cli"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills/x-research" = "x_cli/skills/x-research"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/x_cli",
+    "skills/x-research",
+    "tests",
+    "README.md",
+    "SPEC.md",
+    "NOTICE.md",
+    "LICENSE",
+    "pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
