@@ -60,7 +60,7 @@ running would likely collect the wrong corpus.
 
   - **Simple lookup** (single user timeline, single tweet/article, follower list):
     read `references/read-mode.md` — flag rubric for a single `x-cli` call.
-- **Research or multi-source scan** (briefing, topic scan, "what's happening with X"):
+  - **Research or multi-source scan** (briefing, topic scan, "what's happening with X"):
     read `references/search-plan.md` — source selection, probe-first parameter derivation,
     `--product`/time-window decision. Load `references/read-mode.md` only for edge-case flags.
     Always write the compact research plan before the first `x-cli` data command.

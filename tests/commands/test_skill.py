@@ -59,21 +59,33 @@ def test_skill_install_is_idempotent_for_existing_links(tmp_path, cli):
     assert statuses == {"already_installed"}
 
 
-def test_skill_install_refuses_existing_real_directory(tmp_path, cli):
+def test_skill_install_fails_for_existing_real_directory(tmp_path, cli):
     existing = tmp_path / ".claude" / "skills" / "x-research"
     existing.mkdir(parents=True)
 
     result = cli(["skill", "install", "--home", str(tmp_path), "--force"])
 
-    assert result.exit_code == 0, result.stderr
+    assert result.exit_code == 1
     body = json.loads(result.stdout)
-    claude_skill = next(
-        item for item in body["data"]["installs"]
-        if item["kind"] == "claude_skill"
-    )
-    assert claude_skill["status"] == "refused_directory"
+    assert body["ok"] is False
+    assert body["error"]["code"] == "install_blocked"
+    assert str(existing) in body["error"]["message"]
     assert existing.is_dir()
     assert not existing.is_symlink()
+
+
+def test_skill_install_fails_for_existing_target_without_force(tmp_path, cli):
+    existing = tmp_path / ".claude" / "commands" / "x.md"
+    existing.parent.mkdir(parents=True)
+    existing.write_text("old command")
+
+    result = cli(["skill", "install", "--home", str(tmp_path)])
+
+    assert result.exit_code == 1
+    body = json.loads(result.stdout)
+    assert body["error"]["code"] == "install_blocked"
+    assert str(existing) in body["error"]["message"]
+    assert existing.read_text() == "old command"
 
 
 def test_skill_install_can_copy_instead_of_linking(tmp_path, cli):

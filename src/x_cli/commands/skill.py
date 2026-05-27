@@ -15,6 +15,7 @@ from x_cli.core.output import build_client, emit_error, emit_ok
 
 SKILL_NAME = "x-research"
 COMMAND_NAMES = ("x", "x-research", "x-cli")
+BLOCKED_STATUSES = {"exists", "refused_directory"}
 
 skill_app = typer.Typer(
     name="skill",
@@ -115,6 +116,14 @@ def install_skill(
     return results
 
 
+def blocked_installs(data: dict[str, Any]) -> list[dict[str, Any]]:
+    installs = data.get("installs", [])
+    return [
+        item for item in installs
+        if item.get("status") in BLOCKED_STATUSES
+    ]
+
+
 @skill_app.command("path")
 def path_cmd(ctx: typer.Context) -> None:
     """Show the bundled x-research skill path."""
@@ -173,6 +182,17 @@ def install_cmd(
         if check_auth:
             me = build_client(c.profile).fetch_me()
             data["auth"] = {"authenticated": True, "screen_name": me.screen_name}
+        blocked = blocked_installs(data)
+        if blocked:
+            emit_error(
+                "install_blocked",
+                "Some targets were not installed: %s" % ", ".join(
+                    "%s=%s" % (item.get("kind"), item.get("path"))
+                    for item in blocked
+                ),
+                c.use_yaml,
+            )
+            raise typer.Exit(code=1)
         emit_ok(data, c.use_yaml)
     except FileNotFoundError as exc:
         emit_error("not_found", str(exc), c.use_yaml)

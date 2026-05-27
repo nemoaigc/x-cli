@@ -149,7 +149,7 @@ Restart the agent client, then use natural language or slash commands:
 
 ```bash
 uv sync --extra dev
-uv run pytest        # 102 tests, no network, no real cookies needed
+uv run pytest        # 118 tests, no network, no real cookies needed
 ```
 
 ## License & credits

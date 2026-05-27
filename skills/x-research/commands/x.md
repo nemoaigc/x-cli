@@ -1,6 +1,6 @@
 ---
 description: "Research or act on X/Twitter with planning, x-cli execution, and safe write flows"
-argument-hint: "[调研今天的 agent 新闻 / user karpathy / trend scan / draft reply...]"
+argument-hint: "[topic/domain/time window / user handle / trend scan / draft reply...]"
 ---
 
 Use the `x-research` skill and the installed `x-cli` binary for this X/Twitter task:
@@ -16,6 +16,6 @@ Default behavior:
 - If this is a post/reply/follow/delete/list-change request, dry-run first and wait for explicit OK before any `--yes`.
 
 If no argument was provided, offer examples and wait:
-- `/x 去 X 调研下今天的 agent 新闻，有啥论文也拿过来`
-- `/x 看 @karpathy 这周发了什么`
+- `/x 去 X 调研下今天 <领域/主题> 有什么新动态`
+- `/x 看 @someaccount 这周发了什么`
 - `/x trend scan`
