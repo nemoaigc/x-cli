@@ -282,25 +282,10 @@ class TwitterClient:
         result = _deep_get(data, "data", "user", "result")
         if not result:
             raise NotFoundError("User @%s not found" % screen_name)
-        legacy = result.get("legacy", {})
-        core = result.get("core", {})
-        avatar = result.get("avatar", {})
-        location_obj = result.get("location", {})
-        return UserProfile(
-            id=result.get("rest_id", ""),
-            name=core.get("name") or legacy.get("name", ""),
-            screen_name=core.get("screen_name") or legacy.get("screen_name", screen_name),
-            bio=legacy.get("description", ""),
-            location=location_obj.get("location") or legacy.get("location", ""),
-            url=_deep_get(legacy, "entities", "url", "urls", 0, "expanded_url") or "",
-            followers_count=_parse_int(legacy.get("followers_count"), 0),
-            following_count=_parse_int(legacy.get("friends_count"), 0),
-            tweets_count=_parse_int(legacy.get("statuses_count"), 0),
-            likes_count=_parse_int(legacy.get("favourites_count"), 0),
-            verified=bool(result.get("is_blue_verified") or legacy.get("verified", False)),
-            profile_image_url=avatar.get("image_url") or legacy.get("profile_image_url_https", ""),
-            created_at=core.get("created_at") or legacy.get("created_at", ""),
-        )
+        profile = parse_user_result(result, fallback_screen_name=screen_name)
+        if profile is None:
+            raise NotFoundError("User @%s not found" % screen_name)
+        return profile
 
     def fetch_user_tweets(self, user_id, count=20):
         # type: (str, int) -> List[Tweet]

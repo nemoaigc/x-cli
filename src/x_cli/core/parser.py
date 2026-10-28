@@ -113,7 +113,9 @@ def _extract_author(user_data, user_legacy):
             or user_legacy.get("profile_image_url_https", "")
         ),
         verified=bool(user_data.get("is_blue_verified") or user_legacy.get("verified", False)),
-        followers_count=_parse_int(user_legacy.get("followers_count"), 0),
+        followers_count=_parse_int(
+            (user_data.get("relationship_counts") or {}).get("followers", user_legacy.get("followers_count")), 0,
+        ),
     )
 
 
@@ -349,28 +351,35 @@ def _get_article_result(tweet_data):
     return None
 
 
-def parse_user_result(user_data):
-    # type: (Dict[str, Any]) -> Optional[UserProfile]
+def parse_user_result(user_data, fallback_screen_name=""):
+    # type: (Dict[str, Any], str) -> Optional[UserProfile]
     if user_data.get("__typename") == "UserUnavailable":
         return None
-    legacy = user_data.get("legacy", {})
-    if not legacy:
+    legacy = user_data.get("legacy") or {}
+    core = user_data.get("core") or {}
+    if not legacy and not core:
         return None
-    core = user_data.get("core", {})
-    avatar = user_data.get("avatar", {})
-    location_obj = user_data.get("location", {})
+    # Since ~2026-10 X splits the user `legacy` object into top-level fields
+    # (profile_bio, relationship_counts, tweet_counts, ...); keep legacy as fallback.
+    avatar = user_data.get("avatar") or {}
+    location_obj = user_data.get("location") or {}
+    bio_obj = user_data.get("profile_bio") or {}
+    relationship_counts = user_data.get("relationship_counts") or {}
+    tweet_counts = user_data.get("tweet_counts") or {}
+    action_counts = user_data.get("action_counts") or {}
+    entities = bio_obj.get("entities") or legacy.get("entities") or {}
     return UserProfile(
         id=user_data.get("rest_id", ""),
         name=core.get("name") or legacy.get("name", ""),
-        screen_name=core.get("screen_name") or legacy.get("screen_name", ""),
-        bio=legacy.get("description", ""),
+        screen_name=core.get("screen_name") or legacy.get("screen_name") or fallback_screen_name,
+        bio=bio_obj.get("description") or legacy.get("description", ""),
         location=location_obj.get("location") or legacy.get("location", ""),
-        url=_deep_get(legacy, "entities", "url", "urls", 0, "expanded_url") or "",
-        followers_count=_parse_int(legacy.get("followers_count"), 0),
-        following_count=_parse_int(legacy.get("friends_count"), 0),
-        tweets_count=_parse_int(legacy.get("statuses_count"), 0),
-        likes_count=_parse_int(legacy.get("favourites_count"), 0),
-        verified=user_data.get("is_blue_verified", False) or legacy.get("verified", False),
+        url=_deep_get(entities, "url", "urls", 0, "expanded_url") or "",
+        followers_count=_parse_int(relationship_counts.get("followers", legacy.get("followers_count")), 0),
+        following_count=_parse_int(relationship_counts.get("following", legacy.get("friends_count")), 0),
+        tweets_count=_parse_int(tweet_counts.get("tweets", legacy.get("statuses_count")), 0),
+        likes_count=_parse_int(action_counts.get("favorites_count", legacy.get("favourites_count")), 0),
+        verified=bool(user_data.get("is_blue_verified") or legacy.get("verified", False)),
         profile_image_url=avatar.get("image_url") or legacy.get("profile_image_url_https", ""),
         created_at=core.get("created_at") or legacy.get("created_at", ""),
     )
