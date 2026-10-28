@@ -28,19 +28,19 @@ TWITTER_OPENAPI_URL = (
 FALLBACK_QUERY_IDS = {
     "HomeTimeline": "Yf4WJo0fW46TnqrHUw_1Ow",
     "HomeLatestTimeline": "BKB7oi212Fi7kQtCBGE4zA",
-    "UserByScreenName": "1VOOyvKkiI3FMmkeDNxM9A",
-    "UserTweets": "q6xj5bs0hapm9309hexA_g",
-    "UserArticlesTweets": "b6vrYvHHxBdaq5hzyq2zDw",
-    "UserMedia": "Uqb0z_IFBrxmPUhQ7pz6GQ",
-    "UserTweetsAndReplies": "J1_6xm8Paoy-0DOlAEEAfg",
-    "UserHighlightsTweets": "TU9RCRxFltsXUxA-9n1f0w",
-    "TweetDetail": "xd_EMdYvB9hfZsZ6Idri0w",
-    "Likes": "lIDpu_NWL7_VhimGGt0o6A",
-    "SearchTimeline": "VhUd6vHVmLBcw0uX-6jMLA",
+    "UserByScreenName": "AMIBMjtxEEATh4z8V9GtRg",
+    "UserTweets": "YHYMZsaMvzJvb5D2UVVjgw",
+    "UserArticlesTweets": "px0ZuoJAreztxT8_nJr9Xg",
+    "UserMedia": "eF8kYZ4r9zFLqcYno3I17A",
+    "UserTweetsAndReplies": "MbxTcSWPt8RWRFMwenOtyQ",
+    "UserHighlightsTweets": "2vCerAWrlID9W2wM0pmuaA",
+    "TweetDetail": "gJoREC4Bspo4kJ0ax9C3sQ",
+    "Likes": "mzOgReEsktOIIXzWkqf0ig",
+    "SearchTimeline": "f7SuGIm11eLbQs7c0K9X9w",
     "Bookmarks": "2neUNDqrrFzbLui8yallcQ",
     "ListLatestTweetsTimeline": "RlZzktZY_9wJynoepm8ZsA",
-    "Followers": "IOh4aS6UdGWGJUYTqliQ7Q",
-    "Following": "zx6e-TLzRkeDO_a7p4b3JQ",
+    "Followers": "KLLQR3852iPAj8J32VMdXQ",
+    "Following": "nxiL6UwEf7B1K1JNGPx-Jw",
     # Engagement writes
     "FavoriteTweet": "lI07N6Otwv1PhnEgXILM7A",
     "UnfavoriteTweet": "ZYKSe-w7KEslx3JhSIk5LA",
@@ -49,28 +49,28 @@ FALLBACK_QUERY_IDS = {
     "CreateBookmark": "aoDbu3RHznuiSkQ9aNM67Q",
     "DeleteBookmark": "Wlmlj2-xzyS1GN3a6cj-mQ",
     # Content creation / deletion (write mode)
-    "CreateTweet": "c50A_puUoQGK_4SXseYz3A",
+    "CreateTweet": "5CVj-J0FZWyGgJpcjeBJEA",
     "DeleteTweet": "nxpZCY2K-I6QoFHAHeojFQ",
-    "CreateNoteTweet": "af8H4woJ-v1hWD4HwrDJbw",
+    "CreateNoteTweet": "VtI_DWMLTJzkPVbTsOXMYw",
     # Pin / moderate / hide replies (v1.1)
     "PinTweet": "VIHsNu89pK-kW35JpHq7Xw",
     "UnpinTweet": "BhKei844ypCyLYCg0nwigw",
     "ModerateTweet": "pjFnHGVqCjTcZol0xcBJjw",
     "UnmoderateTweet": "pVSyu6PA57TLvIE4nN2tsA",
     # Single-tweet lookups
-    "TweetResultByRestId": "7xflPyRiUxGVbJd4uWmbfg",
-    "TweetResultsByRestIds": "i_WLNEi4e2JidkqGBR3ZIw",
+    "TweetResultByRestId": "a-Xpq8PjX9K6U5cmc1f05A",
+    "TweetResultsByRestIds": "yicqPSziST_OYCvXJH4JbA",
     # Bookmark folders
     "BookmarkFoldersSlice": "i78YDd0Tza-dV4SYs58kRg",
     "BookmarkFolderTimeline": "hNY7X2xE2N7HVF6Qb_mu6w",
     # Explore / trend discovery
-    "ExplorePage": "Zl-E3GE1UplQV-gLArsNCw",
-    "GenericTimelineById": "23uIIth19xjoWPrqcRtlig",
-    "TrendRelevantUsers": "2fBdtS8def6wxCDM3xAXXw",
+    "ExplorePage": "8AOU8kcEUKciZ1LZN1z8gw",
+    "GenericTimelineById": "Hf-EsSfAki8uY9Q5ura6zQ",
+    "TrendRelevantUsers": "UPgjT1PCj-iiCMMG4E7bkw",
     # Recommended users (Connect tab)
-    "ConnectTabTimeline": "lq02A-gEzbLefqTgD_PFzQ",
+    "ConnectTabTimeline": "G2bOvMxw7fcLJep4_GPpdw",
     # Custom (pinned) timelines
-    "PinnedTimelines": "SnNm4YWv4Xu26VSx-MIYlw",
+    "PinnedTimelines": "8J1r9u3VjUveEdTY4WUTwQ",
 }
 
 _DEFAULT_FEATURES = {
@@ -131,8 +131,8 @@ def _scan_bundles(url_fetch_fn):
     deadline = time.monotonic() + _BUNDLE_SCAN_BUDGET_SECONDS
 
     try:
-        from .constants import get_user_agent
-        html = url_fetch_fn("https://x.com", {"user-agent": get_user_agent()})
+        from .constants import HOME_PAGE_URL, get_user_agent
+        html = url_fetch_fn(HOME_PAGE_URL, {"user-agent": get_user_agent()})
         script_pattern = re.compile(
             r'(?:src|href)=["\']'
             r'(https://abs\.twimg\.com/responsive-web/client-web[^"\']+'

@@ -4,6 +4,10 @@ import os
 import re
 import sys
 
+# x.com itself now serves the x-web (Vite) app, which lacks the ondemand.s chunk
+# map and client-web bundles. /i/jf/ still serves the legacy responsive-web page.
+HOME_PAGE_URL = "https://x.com/i/jf/"
+
 BEARER_TOKEN = (
     "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs"
     "%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"

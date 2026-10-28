@@ -24,6 +24,7 @@ from x_client_transaction.utils import generate_headers as _gen_ct_headers, get_
 
 from .constants import (
     BEARER_TOKEN,
+    HOME_PAGE_URL,
     SEC_CH_UA_BITNESS,
     SEC_CH_UA_MOBILE,
     SEC_CH_UA_MODEL,
@@ -1561,12 +1562,14 @@ class TwitterClient:
         try:
             cffi_session = _get_cffi_session()
             ct_headers = _gen_ct_headers()
-            home_page = cffi_session.get("https://x.com", headers=ct_headers, timeout=10)
+            home_page = cffi_session.get(HOME_PAGE_URL, headers=ct_headers, timeout=10)
+            home_page.raise_for_status()
             home_page_response = bs4.BeautifulSoup(home_page.content, "html.parser")
             ondemand_url = get_ondemand_file_url(response=home_page_response)
             if not ondemand_url:
                 raise ValueError("Failed to extract ondemand file URL")
             ondemand_file = cffi_session.get(ondemand_url, headers=ct_headers, timeout=10)
+            ondemand_file.raise_for_status()
             self._client_transaction = ClientTransaction(
                 home_page_response=home_page_response,
                 ondemand_file_response=ondemand_file.text,
